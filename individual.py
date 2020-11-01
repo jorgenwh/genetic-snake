@@ -1,6 +1,5 @@
 import numpy as np 
 
-
 class Individual:
     def __init__(self, network):
         self.network = network
@@ -9,7 +8,6 @@ class Individual:
         self.steps = 0
         self.fitness = 0
 
-    
     def compute_fitness(self) -> None:
         # Fitness function from that one paper pepega
         #self.fitness = self.steps * self.steps * 2.0**self.score

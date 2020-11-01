@@ -1,11 +1,9 @@
-from PyQt5 import QtGui, QtCore, QtWidgets
-import numpy as np
-import random
-
 from settings import settings
 from miscellaneous import Point
 from snake import Snake
-
+from PyQt5 import QtGui, QtCore, QtWidgets
+import numpy as np
+import random
 
 class SnakeWidget(QtWidgets.QWidget):
     def __init__(self, parent, map_size=10, cell_size=30, draw_grid=False, snake=None):
@@ -18,7 +16,6 @@ class SnakeWidget(QtWidgets.QWidget):
 
         self.show()
 
-    
     def update(self, update_window: bool, draw_grid: bool) -> None:
         self.draw_grid = draw_grid
         if self.snake.is_alive:
@@ -26,10 +23,8 @@ class SnakeWidget(QtWidgets.QWidget):
             if update_window:
                 self.repaint()
 
-
     def new_game(self, snake: Snake) -> None:
         self.snake = snake
-
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter()
@@ -41,7 +36,6 @@ class SnakeWidget(QtWidgets.QWidget):
             self.draw_food(painter)
 
         painter.end()
-
 
     def draw_map(self, painter: QtGui.QPainter) -> None:
         painter.setRenderHints(QtGui.QPainter.Antialiasing)
@@ -66,7 +60,6 @@ class SnakeWidget(QtWidgets.QWidget):
                 if self.draw_grid:
                     painter.drawLine(0, y, width, y)
                     painter.drawLine(x, 0, x, height)
-
 
     def draw_snake(self, painter: QtGui.QPainter) -> None:
         painter.setRenderHints(QtGui.QPainter.HighQualityAntialiasing)
@@ -110,7 +103,6 @@ class SnakeWidget(QtWidgets.QWidget):
                     y * self.cell_size + (self.cell_size / 3.5) * 2.5
                 )
 
-            
     def draw_food(self, painter: QtGui.QPainter) -> None:
         painter.setRenderHints(QtGui.QPainter.HighQualityAntialiasing)
         painter.setPen(QtGui.QPen(QtCore.Qt.black))
