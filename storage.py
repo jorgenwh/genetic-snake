@@ -1,7 +1,6 @@
 import os
 import numpy as np 
 
-
 def save_model(weights: list, layer_dim: list, map_size: int) -> None:
     # Create a directory for the model if one doesn't already exist
     if not os.path.isdir('models'):
@@ -19,7 +18,6 @@ def save_model(weights: list, layer_dim: list, map_size: int) -> None:
     for i, w in enumerate(weights):
         np.save(f'models/model_{map_size}/weights/w{i}.npy', w)
 
-
 def load_model(map_size: int) -> tuple:
     if not os.path.isdir(f'models/model_{map_size}'):
         print("Failed to load model: model data for this map size doesn't exist")
@@ -34,7 +32,6 @@ def load_model(map_size: int) -> tuple:
         weights.append(w)
 
     return layer_dim, weights
-
 
 def save_game(game_data: dict, map_size: int) -> None:
     # Make all necessary folders if they don't exist
@@ -58,7 +55,6 @@ def save_game(game_data: dict, map_size: int) -> None:
     # Save the food spawn positions
     food_spawns = np.array(game_data['food_spawns'])
     np.save(f'game_data/game_{map_size}/food_spawns.npy', food_spawns)
-
 
 def load_game(map_size) -> dict:
     if not os.path.isdir(f'game_data/game_{map_size}'):

@@ -1,10 +1,8 @@
+from settings import settings
+from neural_network import NeuralNetwork
 from PyQt5 import QtGui, QtCore, QtWidgets
 import numpy as np
 import random
-
-from settings import settings
-from neural_network import NeuralNetwork
-
 
 class NeuralNetWidget(QtWidgets.QWidget):
     def __init__(self, parent, network):
@@ -16,11 +14,9 @@ class NeuralNetWidget(QtWidgets.QWidget):
 
         self.show()
 
-
     def update(self, update_window: bool) -> None:
         if update_window:
             self.repaint()
-
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter()
@@ -29,7 +25,6 @@ class NeuralNetWidget(QtWidgets.QWidget):
         self.draw_neural_network(painter)
 
         painter.end()
-
 
     def draw_neural_network(self, painter: QtGui.QPainter) -> None:
         painter.setRenderHints(QtGui.QPainter.Antialiasing)

@@ -1,7 +1,6 @@
 import numpy as np 
 import random 
 
-
 class NeuralNetwork:
     def __init__(self, layer_dim=[32, 20, 12, 4], weights=None):
         self.layer_dim = layer_dim
@@ -18,7 +17,6 @@ class NeuralNetwork:
 
         self.input_vector = None
         self.activations = []
-
 
     def forward(self, input_vector):
     # Feed the input vector through the network and store the activations
@@ -41,7 +39,6 @@ class NeuralNetwork:
 
             # Store each layer's activations
             self.activations.append(ha)
-
 
     def relu(self, x):
     # ReLU activation function

@@ -1,6 +1,5 @@
 import numpy as np 
 
-
 settings = {
     # update_window:
     #    Whether or not to continuously render visual updates while running the algorithm. This slows down the training

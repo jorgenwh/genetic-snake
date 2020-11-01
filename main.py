@@ -1,10 +1,3 @@
-from PyQt5 import QtGui, QtCore, QtWidgets
-from collections import deque
-import numpy as np
-import random
-import time
-import sys
-
 from settings import settings
 from miscellaneous import Point
 from storage import save_model, load_model, save_game, load_game
@@ -12,14 +5,18 @@ from genetic_functions import elitist_selection, roulette_wheel_selection
 from genetic_functions import crossover, mutate
 from genetic_functions import single_point_crossover, simulated_binary_crossover
 from genetic_functions import gaussian_mutation
-
 from snake_widget import SnakeWidget
 from neural_network_widget import NeuralNetWidget
 from text_widget import TextWidget
 from snake import Snake
 from neural_network import NeuralNetwork
 from individual import Individual
-
+from PyQt5 import QtGui, QtCore, QtWidgets
+from collections import deque
+import numpy as np
+import random
+import time
+import sys
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, settings):
@@ -130,8 +127,8 @@ class MainWindow(QtWidgets.QMainWindow):
         # Show application window
         self.show()
 
-
     def init_application_window(self, window_title: str) -> None:
+        """Initialize the application window and all its widgets"""
         self.centralWidget = QtWidgets.QWidget(self)
         self.setCentralWidget(self.centralWidget)
         self.setWindowTitle(window_title)
@@ -155,7 +152,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.text_widget.setGeometry(
             35, 50 + self.snake_widget_height, self.text_widget_width, self.text_widget_height)
 
-
     def update(self) -> None:
         self.snake_widget.update(self.update_window, self.draw_grid)
         self.network_widget.update(self.update_window)
@@ -163,32 +159,28 @@ class MainWindow(QtWidgets.QMainWindow):
             self.update_window, self.cur_ind, self.generation, self.snake.score, self.highest_score, self.average_fitness)
 
         if self.snake.is_alive:
-            #print("if 1   \r", end="")
             self.snake.move()
             if self.snake.score > self.highest_score:
                 self.highest_score = self.snake.score
                 self.new_highest = True
 
             # If we are processing without visuals, update the visuals to show the completed game
-            #if self.snake.has_won:
-            #    self.update_window = True
+            if self.snake.has_won:
+                self.update_window = True
 
-        elif self.snake.has_won:
-            #print("if 2   \r", end="")
         # If an agent has won the game, we store the game and model
-            print(f"ind {self.cur_ind} | gen: {self.generation} | top score: {self.highest_score} | avg score: {round(self.average_score, 2)} | max score: {self.map_size**2 - 3}  \r", end='')
+        elif self.snake.has_won:
+            print(f"ind {self.cur_ind} | gen: {self.generation} | top score: {self.highest_score} | avg score: {round(self.average_score, 2)}     \r", end='')
             if self.save_game:
                 save_game(self.snake.game_data, self.map_size)
                 save_model(self.individual.network.weights, self.neuralnet_structure, self.map_size)
             self.snake.is_alive = False
             self.snake.has_won = False
-            #self.timer.stop()
 
         else:
-            #print("if 3   \r", end="")
-            if self.load_model or self.load_game:
             # If we were showcasing the best stored neural net or game
-                #print(f"score: {self.highest_score}")
+            if self.load_model or self.load_game:
+                print(f"score: {self.highest_score}")
                 self.timer.stop()
                 return
 
@@ -204,7 +196,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.individual.compute_fitness()
             self.cur_ind += 1
 
-            print(f"ind {self.cur_ind} | gen: {self.generation} | top score: {self.highest_score} | avg score: {round(self.average_score, 2)} | max score: {self.map_size**2 - 3}  \r", end='')
+            print(f"ind {self.cur_ind} | gen: {self.generation} | top score: {self.highest_score} | avg score: {round(self.average_score, 2)}     \r", end='')
             
             if self.cur_ind != self.population_size:
             # We haven't evaluated all the networks in the population yet
@@ -233,7 +225,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 if self.generation >= self.max_generations+1:
                     quit()
 
-    
     def process_generation(self) -> None:
         self.population = elitist_selection(self.population, self.n_parents)
         random.shuffle(self.population)
@@ -254,7 +245,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.population.extend(children)
         random.shuffle(self.population)
 
-
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
     # Handle input commands
         key_press = event.key()
@@ -273,19 +263,14 @@ class MainWindow(QtWidgets.QMainWindow):
         elif key_press == QtCore.Qt.Key_E:
             self.timer.stop()
             quit(0)
-        
         elif key_press == QtCore.Qt.Key_1:
             self.timer.setInterval(1000 / 5)
-        
         elif key_press == QtCore.Qt.Key_2:
             self.timer.setInterval(1000 / 10)
-
         elif key_press == QtCore.Qt.Key_3:
             self.timer.setInterval(1000 / 200)
-
         elif key_press == QtCore.Qt.Key_4:
             self.timer.setInterval(1000 / 5000)
-
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

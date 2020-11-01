@@ -1,9 +1,7 @@
+from miscellaneous import Point
 from PyQt5 import QtGui, QtCore, QtWidgets
 import numpy as np
 import random
-
-from miscellaneous import Point
-
 
 class TextWidget(QtWidgets.QWidget):
     def __init__(self, parent, population_size):
@@ -19,7 +17,6 @@ class TextWidget(QtWidgets.QWidget):
 
         self.show()
 
-    
     def update(self, update_window: bool, cur_ind: int, generation: int, score: int, highest_score: int, average_fitness: float) -> None:
         self.cur_ind = cur_ind
         self.generation = generation
@@ -30,7 +27,6 @@ class TextWidget(QtWidgets.QWidget):
         if update_window:
             self.repaint()
 
-    
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         painter = QtGui.QPainter()
         painter.begin(self)
@@ -39,7 +35,6 @@ class TextWidget(QtWidgets.QWidget):
 
         painter.end()
 
-    
     def draw_stats(self, painter: QtGui.QPainter) -> None:
         middle = self.frameGeometry().width() / 2.0
 

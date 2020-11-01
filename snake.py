@@ -1,10 +1,8 @@
-import numpy as np
-import random
-from collections import deque
-
 from settings import settings
 from miscellaneous import Point
-
+from collections import deque
+import numpy as np
+import random
 
 class Snake:
     def __init__(self, map_size=10, max_moves=100, network=None, game=None):
@@ -59,7 +57,6 @@ class Snake:
         # Store game data (and potentially store it) to replay the game later if the used neural network is loaded with it
         self.game_data = {'directions': [self.direction], 'food_spawns': [self.food_pos], 'start_position': self.snake_body[0]}
 
-
     def init_snake(self) -> None:
         if self.deterministic:
             head = self.game['start_position']  
@@ -77,14 +74,12 @@ class Snake:
 
         self.snake_body = deque(body)
 
-    
     def update(self) -> None:
         self.update_state_vector()
         self.network.forward(self.state_vector)
         action = np.argmax(self.network.activations[-1])
         
         self.change_direction(action)
-
 
     def _create_food(self) -> tuple:
         # If we are replaying a game
@@ -111,7 +106,6 @@ class Snake:
         if not self._is_backwards(direction):
             self.direction = direction
 
-    
     def move(self) -> None:
         if not self.is_alive:
             return
@@ -173,7 +167,6 @@ class Snake:
         # Otherwise it dies
             self.is_alive = False
 
-
     def _is_valid(self, position: tuple) -> bool:
     # If position is outside of the map it is invalid
         if not self._within_map(position):
@@ -189,7 +182,6 @@ class Snake:
         
         return True
 
-    
     def _is_backwards(self, action: str) -> bool:
     # If the given action means moving backwards into the snake body, it is an illegal move
         if action == 'up' and self.direction == 'down':
@@ -201,7 +193,6 @@ class Snake:
         if action == 'left' and self.direction == 'right':
             return True
         return False
-
 
     def update_state_vector(self) -> None:
     # Get the game state as input for the neural network to decide on a move
@@ -231,7 +222,6 @@ class Snake:
         vision = vision.reshape(vision.shape[0] * vision.shape[1])
         self.state_vector = np.concatenate((vision, direction_vector)).reshape(1, 32)
 
-
     def _within_map(self, position: tuple) -> bool:
     # Check whether a given position is within the map
         x, y = position
@@ -239,7 +229,6 @@ class Snake:
             return False
         return True
 
-    
     def _get_direction_vector(self) -> np.ndarray:
     # One hot vector containing snake and tail directions
         one_hot = np.zeros(8)
