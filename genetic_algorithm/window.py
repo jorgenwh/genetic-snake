@@ -28,9 +28,12 @@ class Window(QtWidgets.QMainWindow):
         self.activations = []
         self.generation_score = 0
 
-        self.init_window()
-        self.fps = 10_000
         self.visualize = True
+        self.fps_idx = 2
+        self.fps_settings = [3, 10, 10_000]
+        self.fps = self.fps_settings[self.fps_idx]
+
+        self.init_window()
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.step)
         self.timer.start(1_000 / self.fps)
@@ -124,3 +127,13 @@ class Window(QtWidgets.QMainWindow):
         elif key_press == QtCore.Qt.Key_E:
             self.timer.stop()
             exit()
+
+        elif key_press == QtCore.Qt.Key_Up:
+            self.fps_idx = min(self.fps_idx + 1, 2)
+            self.fps = self.fps_settings[self.fps_idx]
+            self.timer.setInterval(1_000 / self.fps)
+
+        elif key_press == QtCore.Qt.Key_Down:
+            self.fps_idx = max(self.fps_idx - 1, 0)
+            self.fps = self.fps_settings[self.fps_idx]
+            self.timer.setInterval(1_000 / self.fps)

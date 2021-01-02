@@ -31,7 +31,7 @@ class Snake_Env:
         }
 
     def step(self, action):
-        # if action is illegal (backwards) the snake will continue forward
+        # the snake will continue forward if the action is illegal (backwards)
         if self.backwards(action):
             action = self.direction
 
