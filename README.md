@@ -1,2 +1,1 @@
-# snake-ga
-neural network trained to play snake game using a genetic algorithm
+Watch as a neural network learns to play the snake game using a genetic algorithm or deep Q learning.
