@@ -18,7 +18,7 @@ class Window(QtWidgets.QMainWindow):
         self.population = [Individual(Neural_Network(layer_dims=[32, 20, 12, 4])) for _ in range(self.args.parents + self.args.children)]
         self.ind_idx = 0
         self.individual = self.population[self.ind_idx]
-        self.snake_env = Snake_Env(self.args)
+        self.snake_env = Snake_Env(self.args, version=0)
         self.observation = self.snake_env.reset()
 
         self.generation = 1
@@ -115,7 +115,7 @@ class Window(QtWidgets.QMainWindow):
 
     def draw(self):
         self.snake_widget.draw()
-        self.nn_widget.draw(self.activations, self.individual.nnet)
+        self.nn_widget.draw(self.activations, self.individual.nnet.params)
         self.text_widget.draw(self.ind_idx, self.generation, self.snake_env.score, self.highscore)
 
     def keyPressEvent(self, event):
@@ -137,3 +137,4 @@ class Window(QtWidgets.QMainWindow):
             self.fps_idx = max(self.fps_idx - 1, 0)
             self.fps = self.fps_settings[self.fps_idx]
             self.timer.setInterval(1_000 / self.fps)
+            

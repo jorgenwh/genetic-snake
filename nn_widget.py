@@ -4,7 +4,8 @@ import numpy as np
 class NN_Widget(QtWidgets.QWidget):
     def __init__(self, parent, layer_dims):
         super().__init__(parent)
-        self.largest_layer = max(layer_dims)
+        self.layer_dims = layer_dims
+        self.largest_layer = max(self.layer_dims)
         self.neuron_locations = {}
 
         self.layer_gap = 175
@@ -13,9 +14,9 @@ class NN_Widget(QtWidgets.QWidget):
 
         self.show()
 
-    def draw(self, activations, nnet):
+    def draw(self, activations, params):
         self.activations = activations
-        self.nnet = nnet
+        self.params = params
         self.repaint()
 
     def paintEvent(self, event):
@@ -34,7 +35,7 @@ class NN_Widget(QtWidgets.QWidget):
     def draw_neurons(self, painter):
         output_text = ("up", "right", "down", "left")
 
-        for i, layer_dim in enumerate(self.nnet.layer_dims):
+        for i, layer_dim in enumerate(self.layer_dims):
             x = self.layer_gap * i + 5
             neuron_offset = (self.frameGeometry().height() - ((2 * self.neuron_radius + self.neuron_gap) * layer_dim)) / 2.0
             activations = self.activations[i]
@@ -49,16 +50,16 @@ class NN_Widget(QtWidgets.QWidget):
 
                 if i == 0:
                     if activation > 0:
-                        painter.setBrush(QtGui.QBrush(QtGui.QColor(255 - (activation * 255), 255, 255)))
+                        painter.setBrush(QtGui.QBrush(QtGui.QColor(255 - (activation * 255), 255 - (activation * 255), 255 - (activation * 255))))
                     else:
                         painter.setBrush(QtGui.QBrush(QtCore.Qt.white))
 
-                elif i == len(self.nnet.layer_dims) - 1:
+                elif i == len(self.layer_dims) - 1:
                     text = output_text[n]
                     painter.drawText(x + 25, n * (self.neuron_radius * 2 + self.neuron_gap) + neuron_offset + 1.5 * self.neuron_radius, text)
 
                     if n == np.argmax(activations):
-                        painter.setBrush(QtGui.QBrush(QtCore.Qt.cyan))
+                        painter.setBrush(QtGui.QBrush(QtCore.Qt.black))
                     else:
                         painter.setBrush(QtGui.QBrush(QtCore.Qt.white))
 
@@ -72,20 +73,24 @@ class NN_Widget(QtWidgets.QWidget):
                 painter.drawEllipse(x, y, self.neuron_radius * 2, self.neuron_radius * 2)
         
     def draw_synapses(self, painter):
-        for i, params in enumerate(self.nnet.params):
+        for i, params in enumerate(self.params):
             prev_neurons = params.shape[0]
             cur_neurons = params.shape[1]
 
             for p_n in range(prev_neurons):
                 for c_n in range(cur_neurons):
                     synapse = params[p_n, c_n]
-                    strength = max(synapse * 750, 50)
-                    strength = min(strength, 65)
 
-                    if synapse >= 0:
-                        painter.setPen(QtGui.QPen(QtGui.QColor(strength*2.25, strength, strength)))
+                    if synapse is None:
+                        painter.setPen(QtGui.QPen(QtGui.QColor(35, 35, 35)))
                     else:
-                        painter.setPen(QtGui.QPen(QtGui.QColor(strength, strength, strength*1.5)))
+                        strength = max(synapse * 750, 50)
+                        strength = min(strength, 65)
+                
+                        if synapse >= 0:
+                            painter.setPen(QtGui.QPen(QtGui.QColor(strength*2.25, strength, strength)))
+                        else:
+                            painter.setPen(QtGui.QPen(QtGui.QColor(strength, strength, strength*1.5)))
 
                     start = self.neuron_locations[i,p_n]
                     end = self.neuron_locations[i+1,c_n]
