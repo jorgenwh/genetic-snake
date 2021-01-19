@@ -1,1 +1,1 @@
-Watch as a neural network learns to play the snake game using a genetic algorithm or deep Q learning.
+neural networks trained to play snake using different learning algorithms
