@@ -18,7 +18,7 @@ class Window(QtWidgets.QMainWindow):
         self.population = [Individual(Neural_Network(layer_dims=[32, 20, 12, 4])) for _ in range(self.args.parents + self.args.children)]
         self.ind_idx = 0
         self.individual = self.population[self.ind_idx]
-        self.snake_env = Snake_Env(self.args, version=0)
+        self.snake_env = Snake_Env(self.args)
         self.observation = self.snake_env.reset()
 
         self.generation = 1
