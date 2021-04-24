@@ -80,7 +80,11 @@ class Snake_Env:
         self.steps += 1
 
         return self.observe(), reward
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> a5a503aef990eacca9e184af9b32d8575b2dcf2e
     def reset(self):
         self.direction = np.random.randint(4)
         self.tail_direction = self.direction
