@@ -4,17 +4,9 @@ from collections import deque
 class Snake_Env:
     """
     Snake game environment class.
-    
-    The implemented versions are:
-        0: Environment is represented as the snake's sight in 8 directions around the head.
-            The state vector will be of size (1, 32) regardless of the game map size.
-        1: Environment is represented as a 3 dimensional vector representing the full game board
-            similar to how a human would view the game map. The state vector will be of
-            size (3, size, size), where size is the game map size.
     """
-    def __init__(self, args, version=0):
+    def __init__(self, args):
         self.args = args
-        self.version = version
 
         """ 
         0 = up
@@ -89,12 +81,6 @@ class Snake_Env:
 
         return self.observe(), reward
     
-    def observe(self):
-        if self.version == 0:
-            return self.observe_v0()
-        if self.version == 1:
-            return self.observe_v1()
-
     def reset(self):
         self.direction = np.random.randint(4)
         self.tail_direction = self.direction
@@ -149,7 +135,7 @@ class Snake_Env:
                     valid_positions.append((x, y))
         return valid_positions[np.random.randint(0, len(valid_positions))]
 
-    def observe_v0(self):
+    def observe(self):
         vision = np.zeros((8, 3))
         head_position = self.snake_body[0]
         for i, direction in enumerate([(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]):
@@ -174,15 +160,3 @@ class Snake_Env:
         direction[self.tail_direction + 4] = 1
 
         return np.concatenate((vision.reshape(-1), direction)).reshape(1, 32)
-
-    def observe_v1(self):
-        s = np.zeros((3, self.args.size, self.args.size))
-
-        for i, (x, y) in enumerate(self.snake_body):
-            s[1,x,y] = 1
-            if i == 0:
-                s[2,x,y] = 1
-
-        s[0,self.food[0],self.food[1]] = 1
-
-        return s
