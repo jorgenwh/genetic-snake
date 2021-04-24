@@ -20,4 +20,3 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = GA(args)
     sys.exit(app.exec_())
-    # comment test
