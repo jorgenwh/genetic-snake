@@ -16,6 +16,8 @@ class NN_Widget(QtWidgets.QWidget):
 
     def draw(self, activations, params):
         self.activations = activations
+        print("set activations here")
+        print(self.activations)
         self.params = params
         self.repaint()
 
