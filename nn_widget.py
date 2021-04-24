@@ -12,8 +12,6 @@ class NN_Widget(QtWidgets.QWidget):
         self.neuron_radius = 7.5
         self.neuron_gap = 4.5
 
-        self.activations = []
-
         self.show()
 
     def draw(self, activations, params):
