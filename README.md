@@ -1,1 +1,1 @@
-neural networks trained to play snake using different learning algorithms
+Neural network learning to play snake using a genetic algorithm
