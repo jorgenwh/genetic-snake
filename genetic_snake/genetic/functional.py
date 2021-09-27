@@ -1,7 +1,9 @@
-from .individual import Individual
-from .nnet import Neural_Network
 import numpy as np
 import random
+from typing import List, Tuple
+
+from genetic_snake.genetic.genome import Genome
+from genetic_snake.genetic.individual import Individual
 
 def elitist_selection(population, n):
     individuals = sorted(population, key=lambda individual: individual.fitness, reverse=True)
@@ -16,20 +18,20 @@ def roulette_wheel_selection(population, n):
     return selected
 
 def crossover(mom, dad):
-    mom_params, dad_params = mom.nnet.params, dad.nnet.params
+    mom_params, dad_params = mom.genome.params, dad.genome.params
     son_params, daughter_params = [], []
 
     for mom_params_portion, dad_params_portion in zip(mom_params, dad_params):
-        option = np.random.choice(["single_point", "SBX"])
-        son_params_portion, daughter_params_portion = single_point_crossover(mom_params_portion, dad_params_portion) if option == "single_point" else simulated_binary_crossover(mom_params_portion, dad_params_portion)
+        option = np.random.choice([simulated_binary_crossover, single_point_crossover])
+        son_params_portion, daughter_params_portion = option(mom_params_portion, dad_params_portion) 
         son_params.append(son_params_portion)
         daughter_params.append(daughter_params_portion)
 
     return (
-        Individual(Neural_Network(layer_dims=[32, 20, 12, 4], params=son_params)),
-        Individual(Neural_Network(layer_dims=[32, 20, 12, 4], params=daughter_params)))
+        Individual(Genome(dims=[32, 20, 12, 4], params=son_params)),
+        Individual(Genome(dims=[32, 20, 12, 4], params=daughter_params)))
 
-def simulated_binary_crossover(mom, dad):
+def simulated_binary_crossover(mom: np.ndarray, dad: np.ndarray) -> Tuple[np.ndarray]:
     eta = 100
     rand = np.random.uniform(0, 1, mom.shape)
     gamma = np.empty(mom.shape)
@@ -59,10 +61,16 @@ def single_point_crossover(mom, dad):
     return son, daughter
 
 def mutate(individual):
-    for params in individual.nnet.params:
+    for params in individual.genome.params:
         gaussian_mutation(params)
 
-def gaussian_mutation(params):
+def gaussian_mutation(params: np.ndarray):
+    """
+    In-place mutates an input parameter ndarray.
+
+    Args:
+        params (np.ndarray): the input parameters to mutate.
+    """
     scale = .2
     mutation_rate = 0.05
 

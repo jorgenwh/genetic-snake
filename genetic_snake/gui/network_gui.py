@@ -1,12 +1,16 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
+from typing import List
 import numpy as np
 
-class NN_Widget(QtWidgets.QWidget):
-    def __init__(self, parent, layer_dims):
+class NetworkGui(QtWidgets.QWidget):
+    def __init__(self, parent, dims: List[int]):
         super().__init__(parent)
-        self.layer_dims = layer_dims
-        self.largest_layer = max(self.layer_dims)
+        self.dims = dims
+        self.largest_layer = max(self.dims)
         self.neuron_locations = {}
+        
+        self.activations = None
+        self.params = None
 
         self.layer_gap = 175
         self.neuron_radius = 7.5
@@ -14,12 +18,15 @@ class NN_Widget(QtWidgets.QWidget):
 
         self.show()
 
-    def draw(self, activations, params):
+    def draw(self, activations: List[np.ndarray], params: List[np.ndarray]):
         self.activations = activations
         self.params = params
         self.repaint()
 
     def paintEvent(self, event):
+        if self.activations is None or self.params is None:
+            return 
+
         painter = QtGui.QPainter()
         painter.begin(self)
 
@@ -35,7 +42,7 @@ class NN_Widget(QtWidgets.QWidget):
     def draw_neurons(self, painter):
         output_text = ("up", "right", "down", "left")
 
-        for i, layer_dim in enumerate(self.layer_dims):
+        for i, layer_dim in enumerate(self.dims):
             x = self.layer_gap * i + 5
             neuron_offset = (self.frameGeometry().height() - ((2 * self.neuron_radius + self.neuron_gap) * layer_dim)) / 2.0
             activations = self.activations[i]
@@ -54,7 +61,7 @@ class NN_Widget(QtWidgets.QWidget):
                     else:
                         painter.setBrush(QtGui.QBrush(QtCore.Qt.white))
 
-                elif i == len(self.layer_dims) - 1:
+                elif i == len(self.dims) - 1:
                     text = output_text[n]
                     painter.drawText(x + 25, n * (self.neuron_radius * 2 + self.neuron_gap) + neuron_offset + 1.5 * self.neuron_radius, text)
 

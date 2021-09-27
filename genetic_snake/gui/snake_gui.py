@@ -1,8 +1,10 @@
 from PyQt5 import QtGui, QtCore, QtWidgets
 import numpy as np
 
-class Snake_Widget(QtWidgets.QWidget):
-    def __init__(self, parent, snake_env, args):
+from genetic_snake.snake_env import SnakeEnv
+
+class SnakeGui(QtWidgets.QWidget):
+    def __init__(self, parent, snake_env: SnakeEnv, args):
         super().__init__(parent)
         self.args = args
         self.snake_env = snake_env
