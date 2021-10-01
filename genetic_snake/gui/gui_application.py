@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtWidgets
 import numpy as np
+import time
 
 from genetic_snake.snake_env import SnakeEnv
 from genetic_snake.genetic.individual import Individual
@@ -78,6 +79,8 @@ class GuiApplication(QtWidgets.QMainWindow):
         self.info_gui = InfoGui(self.centralWidget, self.args)
         self.info_gui.setGeometry(35, 50 + snake_gui_size[0], info_gui_size[0], info_gui_size[1])
 
+        print("\n\33[90m--------------------------------\33[0m\n\33[92mGeneration {:,}\33[0m".format(self.generation))
+
     def step(self):
         if self.snake_env.terminal:
             self.ind_idx += 1
@@ -85,10 +88,14 @@ class GuiApplication(QtWidgets.QMainWindow):
             self.generation_score += self.snake_env.score
 
             if self.ind_idx == self.args.nparents + self.args.nchildren:
+                self.print_generation_summary()
                 self.generation_step()
+                print("\n\33[90m--------------------------------\33[0m\n\33[92mGeneration {:,}\33[0m".format(self.generation))
+                print("\33[1mIndividual\33[0m    : {:,} / {:,}".format(self.ind_idx, self.args.nparents + self.args.nchildren), end="\r")
             else:
                 self.individual = self.population[self.ind_idx]
                 self.observation = self.snake_env.reset()
+                print("\33[1mIndividual\33[0m    : {:,} / {:,}".format(self.ind_idx, self.args.nparents + self.args.nchildren), end="\r")
 
         else:
             self.activations = self.individual.act(self.observation)
@@ -99,8 +106,6 @@ class GuiApplication(QtWidgets.QMainWindow):
 
         if self.render:
             self.draw()
-
-        print(f"individual: {self.ind_idx + 1} - generation: {self.generation} - score: {self.snake_env.score} - highscore: {self.highscore} - mean_score: {round(self.mean_score, 1)}     \r", end="")
 
     def generation_step(self):
         self.mean_fitness = sum([individual.fitness for individual in self.population]) / (self.args.nparents + self.args.nchildren)
@@ -129,6 +134,13 @@ class GuiApplication(QtWidgets.QMainWindow):
         self.generation += 1
         self.ind_idx = 0
         self.individual = self.population[self.ind_idx]
+
+    def print_generation_summary(self):
+        print("\33[1mIndividual\33[0m    : {:,} / {:,}".format(self.ind_idx, self.args.nparents + self.args.nchildren))
+        print(f"\33[1mHighscore\33[0m     : {self.highscore}")
+        print(f"\33[1mMean score\33[0m    : {round(self.mean_score, 2)}")
+        print("\33[1mMean fitness\33[0m  : {:,}".format(round(self.mean_fitness, 2)))
+        print(f"\33[90m--------------------------------\33[0m")
 
     def draw(self):
         self.snake_gui.draw()

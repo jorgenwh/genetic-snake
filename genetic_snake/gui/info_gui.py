@@ -30,10 +30,10 @@ class InfoGui(QtWidgets.QWidget):
 
         # pepehands
         painter.drawText(0, 25, "individual :")
-        painter.drawText(middle, 25, f"{self.ind_idx + 1} / {self.population_size}")
+        painter.drawText(middle, 25, "{:,} / {:,}".format(self.ind_idx, self.population_size))
 
         painter.drawText(0, 50, "generation :")
-        painter.drawText(middle, 50, f"{self.generation}")
+        painter.drawText(middle, 50, "{:,}".format(self.generation))
 
         painter.drawText(0, 75, "score :")
         painter.drawText(middle, 75, f"{self.score}")

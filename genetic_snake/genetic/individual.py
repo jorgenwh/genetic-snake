@@ -19,4 +19,4 @@ class Individual():
         return self.genome.forward(observation)
 
     def compute_fitness(self, score, steps):
-        self.fitness = steps * steps * 2.0 ** score - steps * steps * 2.0 ** (max(score - 2, 0))
+        self.fitness = (steps * 2.0 ** score) - (steps * 2.0 ** (max(score - 2.25, 0))) + (score ** 3.5)
