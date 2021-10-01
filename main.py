@@ -1,6 +1,3 @@
-import pyximport
-pyximport.install()
-
 import sys
 import argparse
 from PyQt5 import QtWidgets

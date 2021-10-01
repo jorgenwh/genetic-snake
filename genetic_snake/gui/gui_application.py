@@ -91,11 +91,11 @@ class GuiApplication(QtWidgets.QMainWindow):
                 self.print_generation_summary()
                 self.generation_step()
                 print("\n\33[90m--------------------------------\33[0m\n\33[92mGeneration {:,}\33[0m".format(self.generation))
-                print("\33[1mIndividual\33[0m    : {:,} / {:,}".format(self.ind_idx, self.args.nparents + self.args.nchildren), end="\r")
+                print("\33[3mIndividual\33[0m    : \33[1m{:,}\33[0m / \33[1m{:,}\33[0m".format(self.ind_idx, self.args.nparents + self.args.nchildren), end="\r")
             else:
                 self.individual = self.population[self.ind_idx]
                 self.observation = self.snake_env.reset()
-                print("\33[1mIndividual\33[0m    : {:,} / {:,}".format(self.ind_idx, self.args.nparents + self.args.nchildren), end="\r")
+                print("\33[3mIndividual\33[0m    : \33[1m{:,}\33[0m / \33[1m{:,}\33[0m".format(self.ind_idx, self.args.nparents + self.args.nchildren), end="\r")
 
         else:
             self.activations = self.individual.act(self.observation)
@@ -136,10 +136,10 @@ class GuiApplication(QtWidgets.QMainWindow):
         self.individual = self.population[self.ind_idx]
 
     def print_generation_summary(self):
-        print("\33[1mIndividual\33[0m    : {:,} / {:,}".format(self.ind_idx, self.args.nparents + self.args.nchildren))
-        print(f"\33[1mHighscore\33[0m     : {self.highscore}")
-        print(f"\33[1mMean score\33[0m    : {round(self.mean_score, 2)}")
-        print("\33[1mMean fitness\33[0m  : {:,}".format(round(self.mean_fitness, 2)))
+        print("\33[3mIndividual\33[0m    : \33[1m{:,}\33[0m / \33[1m{:,}\33[0m".format(self.ind_idx, self.args.nparents + self.args.nchildren))
+        print(f"\33[3mHighscore\33[0m     : \33[1m{self.highscore}\33[0m")
+        print(f"\33[3mMean score\33[0m    : \33[1m{round(self.mean_score, 2)}\33[0m")
+        print("\33[3mMean fitness\33[0m  : \33[1m{:,}\33[0m".format(round(self.mean_fitness, 2)))
         print(f"\33[90m--------------------------------\33[0m")
 
     def draw(self):
