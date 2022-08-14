@@ -6,7 +6,7 @@ from genetic_snake.gui.gui_application import GuiApplication
 from genetic_snake.snake_env import SnakeEnv
 
 # Run build script to build the cpp module. Requires CXX and pybind11
-import temp.cpp as cpp
+import genetic_snake.cpp_module as cpp_module
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Genetic snake game player.")
@@ -22,8 +22,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.usecpp:
-        print("Using CPP SnakeEnv")
+        SnakeEnv = cpp_module.SnakeEnv
 
     application = QtWidgets.QApplication(sys.argv)
-    gui = GuiApplication(args, snake_env_class=(cpp.SnakeEnv if args.usecpp else SnakeEnv))
+    gui = GuiApplication(args, snake_env_class=SnakeEnv)
     sys.exit(application.exec_())
