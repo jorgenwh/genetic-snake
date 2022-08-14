@@ -6,8 +6,8 @@ class SnakeEnv():
     """
     Class to store the state and simulation of a snake game environment.
     """
-    def __init__(self, args):
-        self.args = args
+    def __init__(self, size):
+        self.size = size
 
         """ 
         0 = up
@@ -55,14 +55,14 @@ class SnakeEnv():
                 self.score += 1
                 self.steps_since_food = 0
                 self.food = self.create_food()
-                if self.score == (self.args.size ** 2) - 3:
+                if self.score == (self.size ** 2) - 3:
                     self.terminal = self.won = True
             else:
                 self.snake_body.pop()
                 self.steps_since_food += 1
 
                 # If step limit has been reached, the game ends without a win
-                if self.steps_since_food > self.args.size ** 2:
+                if self.steps_since_food > self.size ** 2:
                     self.terminal = True
 
             tail = self.snake_body[-1]
@@ -87,7 +87,7 @@ class SnakeEnv():
 
         # Return the game state observation, the reward for the last action and whether
         # the action ended the game
-        return self.observe(), reward, self.terminal
+        return self.observe(), self.terminal
         
     # Reset the game state to a starting position
     def reset(self) -> np.ndarray:
@@ -104,6 +104,15 @@ class SnakeEnv():
         self.food = self.create_food()
 
         return self.observe()
+
+    def is_terminal(self):
+        return self.terminal
+
+    def get_snake_body(self):
+        return list(self.snake_body)
+
+    def get_food(self):
+        return self.food
     
     # Check whether a position is valid (within the game map and not inside the snake body)
     def valid(self, position: Tuple[int, int]) -> bool:
@@ -112,7 +121,7 @@ class SnakeEnv():
     # Check whether a position is within the map
     def within_map(self, position: Tuple[int, int]) -> bool:
         x, y = position
-        return x >= 0 and x < self.args.size and y >= 0 and y < self.args.size
+        return x >= 0 and x < self.size and y >= 0 and y < self.size
 
     # Check whether an action means moving backwards from the current direction (into the snake body)
     def backwards(self, action: int) -> bool:
@@ -126,7 +135,7 @@ class SnakeEnv():
             return self.head_direction == 1
 
     def initialize_snake(self) -> Deque[Tuple[int, int]]:
-        head = (np.random.randint(2, self.args.size - 3), np.random.randint(2, self.args.size - 3))
+        head = (np.random.randint(2, self.size - 3), np.random.randint(2, self.size - 3))
 
         if self.head_direction == 0:
             snake_body = [head, (head[0], head[1] + 1), (head[0], head[1] + 2)]
@@ -142,8 +151,8 @@ class SnakeEnv():
     # Create a new (valid) position for the food
     def create_food(self) -> Tuple[int, int]:
         valid_positions = []
-        for x in range(self.args.size):
-            for y in range(self.args.size):
+        for x in range(self.size):
+            for y in range(self.size):
                 if (x, y) not in self.snake_body:
                     valid_positions.append((x, y))
         return valid_positions[np.random.randint(0, len(valid_positions))]

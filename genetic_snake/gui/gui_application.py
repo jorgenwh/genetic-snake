@@ -2,7 +2,6 @@ from PyQt5 import QtCore, QtWidgets
 import numpy as np
 import time
 
-from genetic_snake.snake_env import SnakeEnv
 from genetic_snake.genetic.individual import Individual
 from genetic_snake.genetic.genome import Genome
 
@@ -15,9 +14,11 @@ from genetic_snake.gui.network_gui import NetworkGui
 from genetic_snake.gui.info_gui import InfoGui
 
 class GuiApplication(QtWidgets.QMainWindow):
-    def __init__(self, args):
+    def __init__(self, args, snake_env_class):
         super().__init__()
         self.args = args
+
+        self.snake_env_class = snake_env_class
 
         # Initialize a randomly generated population
         self.population = [Individual() for _ in range(self.args.nparents + self.args.nchildren)]
@@ -26,7 +27,7 @@ class GuiApplication(QtWidgets.QMainWindow):
         self.individual = self.population[self.ind_idx]
 
         # Initialize the snake game environment simulation and get the initial observation
-        self.snake_env = SnakeEnv(self.args)
+        self.snake_env = self.snake_env_class(self.args.size)
         self.observation = self.snake_env.reset()
 
         # Statistics
@@ -82,7 +83,7 @@ class GuiApplication(QtWidgets.QMainWindow):
         print("\n\33[90m--------------------------------\33[0m\n\33[92mGeneration {:,}\33[0m".format(self.generation))
 
     def step(self):
-        if self.snake_env.terminal:
+        if self.snake_env.is_terminal():
             self.ind_idx += 1
             self.individual.compute_fitness(self.snake_env.score, self.snake_env.steps)
             self.generation_score += self.snake_env.score
@@ -100,7 +101,7 @@ class GuiApplication(QtWidgets.QMainWindow):
         else:
             self.activations = self.individual.act(self.observation)
             action = np.argmax(self.activations[-1])
-            self.observation, reward, done = self.snake_env.step(action)
+            self.observation, done = self.snake_env.step(action)
 
             self.highscore = max(self.highscore, self.snake_env.score)
 

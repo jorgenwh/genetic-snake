@@ -47,15 +47,17 @@ class SnakeGui(QtWidgets.QWidget):
         brush.setColor(QtCore.Qt.green)
         painter.setBrush(QtGui.QBrush(QtGui.QColor(20, 165, 10)))
 
-        for x, y in self.snake_env.snake_body:
-            if (x, y) == self.snake_env.snake_body[0]:
+        snake_body = self.snake_env.get_snake_body()
+
+        for x, y in snake_body:
+            if (x, y) == snake_body[0]:
                 painter.setBrush(QtGui.QBrush(QtGui.QColor(255, 255, 0)))
             else:
                 painter.setBrush(QtGui.QBrush(QtGui.QColor(20, 165, 10)))
             painter.drawRect(
                 x * 35, y * 35, 35, 35)
 
-            if (x, y) == self.snake_env.snake_body[0]:
+            if (x, y) == snake_body[0]:
                 painter.setBrush(QtGui.QBrush(QtGui.QColor(0, 0, 0)))
                 eye_radius = 35 / 9.0
 
@@ -87,5 +89,5 @@ class SnakeGui(QtWidgets.QWidget):
         painter.setPen(QtGui.QPen(QtCore.Qt.black))
         painter.setBrush(QtGui.QBrush(QtCore.Qt.red))
 
-        x, y = self.snake_env.food
+        x, y = self.snake_env.get_food()
         painter.drawRect(x * 35, y * 35, 35, 35)
