@@ -12,6 +12,7 @@
 
 #include "snake_env.h"
 #include "fitness_eval.h"
+#include "la.h"
 
 static std::mutex fetch_ind_mu;
 static std::mutex dump_ind_mu;
@@ -40,15 +41,6 @@ std::string format_with_commas(int value) {
   return s;
 }
 
-std::vector<size_t> get_np_shape(py::array_t<float> &arr) {
-  size_t ndims = arr.ndims();
-  std::vector<size_t> shape(ndims);
-  for (size_t i = 0; i < ndims; i++) {
-    shape[i] = arr.shape()[i];
-  }
-  return shape;
-}
-
 int fetch_next_ind() {
   std::lock_guard<std::mutex> lock(fetch_ind_mu);
 
@@ -70,33 +62,25 @@ void dump_ind() {
 }
 
 void run_evaluation_game(std::vector<py::array_t<float>> &params, SnakeEnv &env, int &steps, int &score) {
-  /*py::module_ np = py::module_::import("numpy");
-  py::array_t<float> h = env.reset();
-  py::array_t<float> zh;
+  py::array_t<float> a = env.reset();
   int num_params = params.size();
+
   while (!env.is_terminal()) {
     // Forward
-    for (int i = 0; i < num_params; i++) {
-      std::cout << h.shape() << std::endl;
-      zh = np.attr("dot")(h, params[i]);
+    for (size_t i = 0; i < num_params; i++) {
+      a = matmul(a, params[i]);
       if (i < num_params-1) {
-        h = np.attr("maximum")(zh, 0);
-      }
-      else {
-        h = zh;
+        relu(a);
       }
     }
-    int action = np.attr("argmax")(h).cast<int>();
-    std::cout << action << std::endl;
 
-    h = env.step(action);
-  }*/
+    int action = argmax(a);
 
+    a = env.step(action);
+  }
 
   steps = env.steps;
   score = env.score;
-  steps = 10;
-  score = 1;
 }
 
 void thread_worker(int thread_id) {

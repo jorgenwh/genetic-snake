@@ -9,6 +9,7 @@ add_subdirectory(extern/pybind11)
 set(SOURCES ${SOURCES}
   genetic_snake/cpp/snake_env.cpp
   genetic_snake/cpp/fitness_eval.cpp
+  genetic_snake/cpp/la.cpp
 )
 
 set(BINDINGS
