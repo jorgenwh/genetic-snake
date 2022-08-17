@@ -14,26 +14,12 @@
 #include "fitness_eval.h"
 #include "la.h"
 
-static std::mutex fetch_ind_mu;
-static std::mutex dump_ind_mu;
+std::mutex mu;
 
-static int ind_cntr;
-static int evaluated_ind_cntr;
-static int pop_size;
-static std::string pop_size_formatted;
-static int snake_size;
-
-static std::vector<std::vector<py::array_t<float>>> st_population;
-static std::vector<std::tuple<int, int>> game_results;
-
-static int highscore; 
-static float mean_score;
-static float mean_fitness;
-
-std::string format_with_commas(int value) {
-  std::string s = std::to_string(value);
+static std::string format_with_commas(int v) {
+  std::string s = std::to_string(v);
   int n = s.length() - 3;
-  int end = (value >= 0) ? 0 : 1;
+  int end = (v>= 0) ? 0 : 1;
   while (n > end) {
     s.insert(n, ",");
     n -= 3;
@@ -41,101 +27,131 @@ std::string format_with_commas(int value) {
   return s;
 }
 
-int fetch_next_ind() {
-  std::lock_guard<std::mutex> lock(fetch_ind_mu);
+inline static std::vector<int> get_np_shape(py::array_t<float> &arr) {
+  int ndim = arr.ndim();
+  std::vector<int > shape(ndim);
 
-  if (ind_cntr >= pop_size) {
-    return -1;
+  for (int i = 0; i < ndim; i++) {
+    shape[i] = arr.shape()[i];
   }
-  else {
-    ind_cntr++;
-    return ind_cntr-1;
-  }
+
+  return shape;
 }
 
-void dump_ind() {
-  std::lock_guard<std::mutex> lock(dump_ind_mu);
-
-  evaluated_ind_cntr++;
-  std::string ind_cntr_formatted = format_with_commas(evaluated_ind_cntr-1);
-  std::cout << "\33[3mIndividual\33[0m    : \33[1m" << ind_cntr_formatted << "\33[0m / \33[1m" << pop_size_formatted << "\33[0m\r";
-}
-
-void run_evaluation_game(std::vector<py::array_t<float>> &params, SnakeEnv &env, int &steps, int &score) {
-  py::array_t<float> a = env.reset();
-  int num_params = params.size();
-
-  while (!env.is_terminal()) {
-    // Forward
-    for (size_t i = 0; i < num_params; i++) {
-      a = matmul(a, params[i]);
-      if (i < num_params-1) {
-        relu(a);
+inline static void matmul(const float *A, const float *B, float *C, 
+    const int Ac, const int Bc, const int Cr, const int Cc) {
+  for (int i = 0; i < Cr; i++) {
+    for (int j = 0; j < Cc; j++) {
+      for (int k = 0; k < Ac; k++) {
+        C[i*Cc + j] += A[i*Ac + k] * B[k*Bc + j];
       }
     }
-
-    int action = argmax(a);
-
-    a = env.step(action);
-  }
-
-  steps = env.steps;
-  score = env.score;
-}
-
-void thread_worker(int thread_id) {
-  SnakeEnv env(snake_size);
-
-  int ind_idx;
-  std::vector<py::array_t<float>> params;
-  while (true) {
-    ind_idx = fetch_next_ind();
-
-    if (ind_idx < 0) { break; }
-
-    params = st_population[ind_idx];
-    assert(params.size() == 3);
-
-    int steps, score;
-    run_evaluation_game(params, env, steps, score);
-
-    game_results[ind_idx] = std::make_tuple(steps, score);
-    mean_score += score;
-    highscore = std::max(highscore, score);
-    
-    dump_ind();
   }
 }
 
-py::list evaluate_population(std::vector<std::vector<py::array_t<float>>> &population, int size, int num_threads) {
-  ind_cntr = 0;
-  evaluated_ind_cntr = 1;
-  pop_size = population.size();
-  pop_size_formatted = format_with_commas(pop_size);
-  snake_size = size;
-  highscore = 0;
-  mean_score = 0;
-  st_population = population;
-  game_results.resize(pop_size);
-
-  int thread_ids[num_threads];
-  std::vector<std::thread> threads(num_threads);
-  for (int i = 0; i < num_threads; i++) {
-    thread_ids[i] = i;
-    threads[i] = std::thread(&thread_worker, std::ref(thread_ids[i]));
+inline static void relu(float *arr, size_t size) {
+  for (size_t i = 0; i < size; i++) {
+    arr[i] = (arr[i] > 0) ? arr[i] : 0.0f;
   }
-  for (auto &thread : threads) {
-    if (thread.joinable()) {
-      thread.join();
+}
+
+inline static int argmax(float *arr, int size) {
+  float max = -std::numeric_limits<float>::max();
+  int action = 0;
+
+  for (int i = 0; i < size; i++) {
+    if (arr[i] > max) {
+      action = i;
+      max = arr[i];
     }
   }
 
-  std::cout << "\33[3mIndividual\33[0m    : \33[1m" << pop_size_formatted << "\33[0m / \33[1m" << pop_size_formatted << "\33[0m" << std::endl;
+  return action;
+}
 
-  py::list res;
-  for (std::tuple<int, int> &t : game_results) {
-    res.append(py::make_tuple(std::get<0>(t), std::get<1>(t)));
+void thread_worker(
+    const int &offset, 
+    const int &num_threads,
+    const int &snake_size,
+    std::vector<std::vector<py::array_t<float>>> &population, 
+    std::vector<std::tuple<int, int>> &game_results) {
+  SnakeEnv env(snake_size);
+
+  float *h1 = new float[20];
+  float *h2 = new float[12];
+  float *h3 = new float[4];
+
+  for (size_t i = offset; i < population.size(); i+=num_threads) {
+    std::vector<py::array_t<float>> ind = population[i];
+    
+    const float *w1 = ind[0].data(); 
+    const float *w2 = ind[1].data(); 
+    const float *w3 = ind[2].data(); 
+
+    float *observation = env.reset_raw();
+    while (!env.is_terminal()) {
+      memset(h1, 0, sizeof(float)*20);
+      memset(h2, 0, sizeof(float)*12);
+      memset(h3, 0, sizeof(float)*4);
+
+      // Get action by forwarding through network
+      matmul(observation, w1, h1, 32, 20, 1, 20);
+      relu(h1, 20);
+      matmul(h1, w2, h2, 12, 12, 1, 12);
+      relu(h2, 12);
+      matmul(h2, w3, h3, 12, 4, 1, 4);
+
+      //int action = 1;
+      int action = argmax(h3, 4); 
+      
+      // Free previous observation
+      delete[] observation;
+
+      float *observation = env.step_raw(action);
+    }
+
+    delete[] observation;
+
+    std::get<0>(game_results[i]) = env.steps;
+    std::get<1>(game_results[i]) = env.score;
   }
 
-  return res;
+  delete[] h1;
+  delete[] h2;
+  delete[] h3;
 }
+
+py::list evaluate_population(
+    std::vector<std::vector<py::array_t<float>>> &population, 
+    const int snake_size, const int num_threads) {
+
+  const size_t population_size = population.size();
+  std::vector<std::tuple<int,int>> game_results(population_size);
+
+  std::vector<std::thread> threads(num_threads);
+  int thread_offsets[num_threads];
+  for (int i = 0; i < num_threads; i++) {
+    thread_offsets[i] = i;
+    threads[i] = std::thread(
+        &thread_worker, 
+        std::ref(thread_offsets[i]),
+        std::ref(num_threads),
+        std::ref(snake_size),
+        std::ref(population),
+        std::ref(game_results));
+  }
+  for (auto &t : threads) {
+    if (t.joinable()) {
+      t.join();
+    }
+  }
+
+  std::string population_size_formatted = format_with_commas((int)population_size);
+  std::cout 
+    << "\33[3mIndividual\33[0m    : \33[1m" 
+    << population_size_formatted << "\33[0m / \33[1m" 
+    << population_size_formatted << "\33[0m\n";
+
+  return py::cast(game_results);
+}
+

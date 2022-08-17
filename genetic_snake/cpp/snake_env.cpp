@@ -30,7 +30,7 @@ coord vision_directions[8] = {
 
 SnakeEnv::SnakeEnv(int size) {
   this->size = size;
-  win_score = std::pow(size, 2) - 3;
+  win_score = size*size - 3;
 
   std::random_device rdev;
   rng = new std::mt19937(rdev());
@@ -55,23 +55,27 @@ py::array_t<float> SnakeEnv::step(int action) {
 
   coord new_head_pos = {(*snake.begin()).x + directions[action].x, (*snake.begin()).y + directions[action].y};
 
+  steps++;
+
   if (is_valid(new_head_pos)) {
     snake.push_front(new_head_pos);
 
     if (new_head_pos == food) {
       score++;
       steps_since_food = 0;
-      set_food();
       
       if (score == win_score) {
         flag = FLAG_WON;
+      }
+      else {
+        set_food();
       }
     }
     else {
       snake.pop_back();
       steps_since_food++;
 
-      if (steps_since_food > std::pow(size, 2)) {
+      if (steps_since_food > size*size) {
         flag = FLAG_DEAD;
       }
     }
@@ -90,13 +94,61 @@ py::array_t<float> SnakeEnv::step(int action) {
     flag = FLAG_DEAD;
   }
 
-  steps++;
-
   float *state_data = get_state();
   py::array_t<float> state = py::array_t<float>({1, 32}, state_data);
   delete[] state_data;
 
   return state;
+}
+
+float *SnakeEnv::step_raw(int action) {
+  if (is_backwards(action)) { action = head_direction; }
+
+  head_direction = action;
+
+  coord new_head_pos = {(*snake.begin()).x + directions[action].x, (*snake.begin()).y + directions[action].y};
+
+  steps++;
+
+  if (is_valid(new_head_pos)) {
+    snake.push_front(new_head_pos);
+
+    if (new_head_pos == food) {
+      score++;
+      steps_since_food = 0;
+      
+      if (score == win_score) {
+        flag = FLAG_WON;
+      }
+      else {
+        set_food();
+      }
+    }
+    else {
+      snake.pop_back();
+      steps_since_food++;
+
+      if (steps_since_food > size*size) {
+        flag = FLAG_DEAD;
+      }
+    }
+
+    coord tail = *snake.end();
+    coord next_tail = *(snake.end() - 1);
+    int x_diff = next_tail.x - tail.x;
+    int y_diff = next_tail.y - tail.y;
+
+    if (y_diff < 0) { tail_direction = 0; }
+    else if (y_diff > 0) { tail_direction = 2; }
+    else if (x_diff < 0) { tail_direction = 3; }
+    else if (x_diff > 0) { tail_direction = 1; }
+  }
+  else {
+    flag = FLAG_DEAD;
+  }
+
+  float *state_data = get_state();
+  return state_data;
 }
 
 py::array_t<float> SnakeEnv::reset() {
@@ -117,6 +169,24 @@ py::array_t<float> SnakeEnv::reset() {
   py::array_t<float> state = py::array_t<float>({1, 32}, state_data);
   delete[] state_data;
   return state;
+}
+
+float *SnakeEnv::reset_raw() {
+  head_direction = ((*dist)(*rng)) % 4;
+  assert(head_direction >= 0 && head_direction < 4);
+
+  tail_direction = head_direction;
+
+  initialize_snake();
+  set_food();
+
+  score = 0;
+  steps = 0;
+  steps_since_food = 0;
+  flag = FLAG_ALIVE;
+
+  float *state_data = get_state();
+  return state_data;
 }
 
 bool SnakeEnv::is_terminal() {
@@ -158,7 +228,7 @@ void SnakeEnv::print() {
 }
 
 void SnakeEnv::initialize_snake() {
-  if (!snake.empty()) { snake.clear(); }
+  snake.clear();
 
   coord head;
   head.x = (((*dist)(*rng)) & (size - 4)) + 2;

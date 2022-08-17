@@ -16,6 +16,10 @@ py::array_t<float> matmul(py::array_t<float> &arr1, py::array_t<float> &arr2) {
   size_t out_rows = arr1_rows;
   size_t out_cols= arr2_cols;
 
+  //printf("arr1.shape=(%ld, %ld)\n", arr1_rows, arr1_cols);
+  //printf("arr2.shape=(%ld, %ld)\n", arr2_rows, arr2_cols);
+  //printf("out.shape=(%ld, %ld)\n", out_rows, out_cols);
+
   assert(arr1_cols == arr2_rows);
 
   py::array_t<float> out_arr = py::array_t<float>({arr1_rows, arr2_cols});

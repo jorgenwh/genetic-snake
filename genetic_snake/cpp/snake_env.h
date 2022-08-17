@@ -38,6 +38,8 @@ public:
 
   py::array_t<float> step(int action);
   py::array_t<float> reset();
+  float *step_raw(int action);
+  float *reset_raw();
   bool is_terminal();
 
   void print();
