@@ -36,7 +36,7 @@ public:
   SnakeEnv(int size);
   ~SnakeEnv();
 
-  py::tuple step(int action);
+  py::array_t<float> step(int action);
   py::array_t<float> reset();
   bool is_terminal();
 

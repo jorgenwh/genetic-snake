@@ -5,7 +5,7 @@ class InfoGui(QtWidgets.QWidget):
     def __init__(self, parent, args):
         super().__init__(parent)
         self.args = args
-        self.population_size = self.args.nparents + self.args.nchildren
+        self.population_size = self.args.parents + self.args.children
         self.ind_idx = 0
         self.generation = 0
         self.score = 0

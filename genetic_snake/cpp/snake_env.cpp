@@ -48,7 +48,7 @@ SnakeEnv::~SnakeEnv() {
   delete dist;
 }
 
-py::tuple SnakeEnv::step(int action) {
+py::array_t<float> SnakeEnv::step(int action) {
   if (is_backwards(action)) { action = head_direction; }
 
   head_direction = action;
@@ -95,9 +95,8 @@ py::tuple SnakeEnv::step(int action) {
   float *state_data = get_state();
   py::array_t<float> state = py::array_t<float>({1, 32}, state_data);
   delete[] state_data;
-  bool done = (flag != FLAG_ALIVE);
 
-  return py::make_tuple(state, done);
+  return state;
 }
 
 py::array_t<float> SnakeEnv::reset() {

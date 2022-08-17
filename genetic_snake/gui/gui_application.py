@@ -14,17 +14,21 @@ from genetic_snake.gui.network_gui import NetworkGui
 from genetic_snake.gui.info_gui import InfoGui
 
 class GuiApplication(QtWidgets.QMainWindow):
-    def __init__(self, args, snake_env_class):
+    def __init__(self, args, snake_env_class, loaded_individual=None):
         super().__init__()
         self.args = args
-
         self.snake_env_class = snake_env_class
-
-        # Initialize a randomly generated population
-        self.population = [Individual() for _ in range(self.args.nparents + self.args.nchildren)]
+        self.loaded = False
 
         self.ind_idx = 0
-        self.individual = self.population[self.ind_idx]
+        if loaded_individual is None:
+            # Initialize a randomly generated population
+            self.population = [Individual() for _ in range(self.args.parents + self.args.children)]
+
+            self.individual = self.population[self.ind_idx]
+        else:
+            self.individual = loaded_individual
+            self.loaded = True
 
         # Initialize the snake game environment simulation and get the initial observation
         self.snake_env = self.snake_env_class(self.args.size)
@@ -45,8 +49,8 @@ class GuiApplication(QtWidgets.QMainWindow):
         self.render = True
 
         # Variables to control fps (speed)
-        self.fps_idx = 2
-        self.fps_settings = [3, 10, 10_000]
+        self.fps_idx = 0 if self.loaded else 2
+        self.fps_settings = [3, 10, 10000]
         self.fps = self.fps_settings[self.fps_idx]
 
         # Initialize the widgets
@@ -84,24 +88,32 @@ class GuiApplication(QtWidgets.QMainWindow):
 
     def step(self):
         if self.snake_env.is_terminal():
-            self.ind_idx += 1
             self.individual.compute_fitness(self.snake_env.score, self.snake_env.steps)
             self.generation_score += self.snake_env.score
 
-            if self.ind_idx == self.args.nparents + self.args.nchildren:
+            if self.loaded:
+                return
+
+            self.ind_idx += 1
+
+            if self.snake_env.score == self.args.size ** 2:
+                self.individual.genome.save("models/ind")
+                exit(0)
+
+            if self.ind_idx == self.args.parents + self.args.children:
                 self.print_generation_summary()
                 self.generation_step()
                 print("\n\33[90m--------------------------------\33[0m\n\33[92mGeneration {:,}\33[0m".format(self.generation))
-                print("\33[3mIndividual\33[0m    : \33[1m{:,}\33[0m / \33[1m{:,}\33[0m".format(self.ind_idx, self.args.nparents + self.args.nchildren), end="\r")
+                print("\33[3mIndividual\33[0m    : \33[1m{:,}\33[0m / \33[1m{:,}\33[0m".format(self.ind_idx, self.args.parents + self.args.children), end="\r")
             else:
                 self.individual = self.population[self.ind_idx]
                 self.observation = self.snake_env.reset()
-                print("\33[3mIndividual\33[0m    : \33[1m{:,}\33[0m / \33[1m{:,}\33[0m".format(self.ind_idx, self.args.nparents + self.args.nchildren), end="\r")
+                print("\33[3mIndividual\33[0m    : \33[1m{:,}\33[0m / \33[1m{:,}\33[0m".format(self.ind_idx, self.args.parents + self.args.children), end="\r")
 
         else:
             self.activations = self.individual.act(self.observation)
             action = np.argmax(self.activations[-1])
-            self.observation, done = self.snake_env.step(action)
+            self.observation = self.snake_env.step(action)
 
             self.highscore = max(self.highscore, self.snake_env.score)
 
@@ -109,15 +121,15 @@ class GuiApplication(QtWidgets.QMainWindow):
             self.draw()
 
     def generation_step(self):
-        self.mean_fitness = sum([individual.fitness for individual in self.population]) / (self.args.nparents + self.args.nchildren)
-        self.mean_score = self.generation_score / (self.args.nparents + self.args.nchildren)
+        self.mean_fitness = sum([individual.fitness for individual in self.population]) / (self.args.parents + self.args.children)
+        self.mean_score = self.generation_score / (self.args.parents + self.args.children)
         self.generation_score = 0
 
-        self.population = elitist_selection(self.population, self.args.nparents)
+        self.population = elitist_selection(self.population, self.args.parents)
         np.random.shuffle(self.population)
 
         children = []
-        while len(children) < self.args.nchildren:
+        while len(children) < self.args.children:
             mom, dad = roulette_wheel_selection(self.population, 2)
 
             # breed
@@ -137,7 +149,7 @@ class GuiApplication(QtWidgets.QMainWindow):
         self.individual = self.population[self.ind_idx]
 
     def print_generation_summary(self):
-        print("\33[3mIndividual\33[0m    : \33[1m{:,}\33[0m / \33[1m{:,}\33[0m".format(self.ind_idx, self.args.nparents + self.args.nchildren))
+        print("\33[3mIndividual\33[0m    : \33[1m{:,}\33[0m / \33[1m{:,}\33[0m".format(self.ind_idx, self.args.parents + self.args.children))
         print(f"\33[3mHighscore\33[0m     : \33[1m{self.highscore}\33[0m")
         print(f"\33[3mMean score\33[0m    : \33[1m{round(self.mean_score, 2)}\33[0m")
         print("\33[3mMean fitness\33[0m  : \33[1m{:,}\33[0m".format(round(self.mean_fitness, 2)))

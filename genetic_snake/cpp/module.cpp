@@ -4,6 +4,7 @@
 namespace py = pybind11;
 
 #include "snake_env.h"
+#include "fitness_eval.h"
 
 PYBIND11_MODULE(cpp_module, m) {
   m.doc() = "Documentation for cpp parts of the genetic-snake project";
@@ -21,4 +22,6 @@ PYBIND11_MODULE(cpp_module, m) {
     .def_readwrite("steps", &SnakeEnv::steps)
     .def_readwrite("score", &SnakeEnv::score)
     ;
+
+  m.def("evaluate_population", &evaluate_population);
 }

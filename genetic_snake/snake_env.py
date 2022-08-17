@@ -34,7 +34,7 @@ class SnakeEnv():
             3: (-1, 0)
         }
 
-    def step(self, action: int) -> Tuple[np.ndarray, float, bool]:
+    def step(self, action: int) -> np.ndarray:
         # the snake will continue forward if the action is illegal (backwards)
         if self.backwards(action):
             action = self.head_direction
@@ -85,9 +85,8 @@ class SnakeEnv():
             reward = -1
         self.steps += 1
 
-        # Return the game state observation, the reward for the last action and whether
-        # the action ended the game
-        return self.observe(), self.terminal
+        # Return the game state observation
+        return self.observe()
         
     # Reset the game state to a starting position
     def reset(self) -> np.ndarray:
