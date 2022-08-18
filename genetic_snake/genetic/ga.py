@@ -8,8 +8,6 @@ from genetic_snake.genetic.functional import mutate
 
 import genetic_snake.cpp_module as cpp_module
 
-saved_individuals = 0
-
 def evaluate_population(population, size, snake_env_class):
     highscore = 0
     mean_score = 0
@@ -84,9 +82,8 @@ def run_genetic_algorithm(parents, children, usecpp, size, snake_env_class, num_
                 mean_fitness += ind.fitness
 
                 if score >= size**2 - 3:
-                    print("WIN ACHIEVED")
-                    ind.genome.save(f"models/ind{saved_individuals+1}")
-                    saved_individuals += 1
+                    ind.genome.save(f"models/ind")
+                    exit(0)
             
             mean_score /= pop_size
             mean_fitness /= pop_size

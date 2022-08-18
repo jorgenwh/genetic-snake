@@ -1,20 +1,16 @@
 #include <iostream>
-#include <locale>
-#include <iomanip>
 #include <string>
 #include <vector>
 #include <tuple>
 #include <thread>
 #include <mutex>
-#include <assert.h>
-#include <chrono>
-#include <stdio.h>
 
 #include "snake_env.h"
 #include "fitness_eval.h"
-#include "la.h"
 
-std::mutex mu;
+static std::mutex mu;
+static int ind_counter;
+static std::string population_size_formatted;
 
 static std::string format_with_commas(int v) {
   std::string s = std::to_string(v);
@@ -25,6 +21,16 @@ static std::string format_with_commas(int v) {
     n -= 3;
   }
   return s;
+}
+
+static void dump_ind() {
+  std::lock_guard<std::mutex> lock(mu);
+  ind_counter++;
+  std::string ind_counter_formatted = format_with_commas(ind_counter);
+  std::cout 
+    << "\33[3mIndividual\33[0m    : \33[1m" 
+    << ind_counter_formatted << "\33[0m / \33[1m" 
+    << population_size_formatted << "\33[0m\r";
 }
 
 inline static std::vector<int> get_np_shape(py::array_t<float> &arr) {
@@ -114,6 +120,8 @@ void thread_worker(
 
     std::get<0>(game_results[i]) = env.steps;
     std::get<1>(game_results[i]) = env.score;
+
+    dump_ind();
   }
 
   delete[] h1;
@@ -124,9 +132,11 @@ void thread_worker(
 py::list evaluate_population(
     std::vector<std::vector<py::array_t<float>>> &population, 
     const int snake_size, const int num_threads) {
-
   const size_t population_size = population.size();
   std::vector<std::tuple<int,int>> game_results(population_size);
+
+  ind_counter = 0;
+  population_size_formatted = format_with_commas(population_size);
 
   std::vector<std::thread> threads(num_threads);
   int thread_offsets[num_threads];
