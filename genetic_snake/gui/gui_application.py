@@ -1,24 +1,21 @@
 from PyQt5 import QtCore, QtWidgets
 import numpy as np
-import time
 
-from genetic_snake.genetic.individual import Individual
-from genetic_snake.genetic.genome import Genome
+from ..genetic.individual import Individual
+from ..genetic.functional import elitist_selection, roulette_wheel_selection
+from ..genetic.functional import crossover
+from ..genetic.functional import mutate
+from .snake_gui import SnakeGUI
+from .network_gui import NetworkGUI
+from .info_gui import InfoGUI
 
-from genetic_snake.genetic.functional import elitist_selection, roulette_wheel_selection
-from genetic_snake.genetic.functional import crossover 
-from genetic_snake.genetic.functional import mutate 
-
-from genetic_snake.gui.snake_gui import SnakeGui
-from genetic_snake.gui.network_gui import NetworkGui
-from genetic_snake.gui.info_gui import InfoGui
-
-class GuiApplication(QtWidgets.QMainWindow):
-    def __init__(self, args, snake_env_class, loaded_individual=None):
+class GUIApplication(QtWidgets.QMainWindow):
+    def __init__(self, args, snake_env_class, loaded_individual=None, output_dir_name=None):
         super().__init__()
         self.args = args
         self.snake_env_class = snake_env_class
         self.loaded = False
+        self.output_dir_name = output_dir_name
 
         self.ind_idx = 0
         if loaded_individual is None:
@@ -73,15 +70,15 @@ class GuiApplication(QtWidgets.QMainWindow):
         self.setFixedSize(width, height)
 
         # snake game widget
-        self.snake_gui = SnakeGui(self.centralWidget, self.snake_env, self.args)
+        self.snake_gui = SnakeGUI(self.centralWidget, self.snake_env, self.args)
         self.snake_gui.setGeometry(35, 50, snake_gui_size[0], snake_gui_size[1])
 
         # neural network widget
-        self.network_gui = NetworkGui(self.centralWidget, [32, 20, 12, 4])
+        self.network_gui = NetworkGUI(self.centralWidget, [32, 20, 12, 4])
         self.network_gui.setGeometry(110 + snake_gui_size[0], 50, network_gui_size[0], network_gui_size[1])
 
         # text widget
-        self.info_gui = InfoGui(self.centralWidget, self.args)
+        self.info_gui = InfoGUI(self.centralWidget, self.args)
         self.info_gui.setGeometry(35, 50 + snake_gui_size[0], info_gui_size[0], info_gui_size[1])
 
         print("\n\33[90m--------------------------------\33[0m\n\33[92mGeneration {:,}\33[0m".format(self.generation))
@@ -96,8 +93,12 @@ class GuiApplication(QtWidgets.QMainWindow):
 
             self.ind_idx += 1
 
-            if self.snake_env.score == self.args.size ** 2:
-                self.individual.genome.save("models/ind")
+            if self.snake_env.score == self.args.size ** 2 - 3:
+                if not self.loaded:
+                    if self.output_dir_name is not None:
+                        self.individual.genome.save(self.output_dir_name)
+                    else:
+                        self.individual.genome.save(f"individual_gen_{self.generation}")
                 exit(0)
 
             if self.ind_idx == self.args.parents + self.args.children:

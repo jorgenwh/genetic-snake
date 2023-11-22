@@ -39,23 +39,24 @@ class Genome():
     def relu(self, x):
         return np.maximum(x, 0)
 
-    def save(self, out_folder):
-        if os.path.isdir(out_folder):
-            print("Error: cannot save genome because output folder already exists.")
+    def save(self, dir_name):
+        if os.path.isdir(dir_name):
+            print(f"Error: cannot save genome because directory '{dir_name}' already exists.")
             exit(1)
 
-        os.mkdir(out_folder)
+        os.mkdir(dir_name)
         for i, p in enumerate(self.params):
-            filename = os.path.join(out_folder, f"w{i+1}.npy")
+            filename = os.path.join(dir_name, f"w{i+1}.npy")
             np.save(filename, p)
 
-    def load(self, name_folder):
+    def load(self, dir_name):
         self.dims = []
         self.params = []
 
-        p_filenames = sorted(os.listdir(name_folder))
+        p_filenames = sorted(os.listdir(dir_name))
         for i, filename in enumerate(p_filenames):
-            p = np.load(os.path.join(name_folder, filename))
+            p = np.load(os.path.join(dir_name, filename))
+            print(f"Loaded parameter matrix {i+1} with shape {p.shape}")
             self.params.append(p)
 
             self.dims.append(p.shape[0])

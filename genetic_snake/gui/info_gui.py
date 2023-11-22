@@ -1,7 +1,7 @@
 from PyQt5 import QtGui, QtWidgets
 import numpy as np
 
-class InfoGui(QtWidgets.QWidget):
+class InfoGUI(QtWidgets.QWidget):
     def __init__(self, parent, args):
         super().__init__(parent)
         self.args = args

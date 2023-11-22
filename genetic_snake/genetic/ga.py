@@ -1,12 +1,10 @@
 import numpy as np
 
-from genetic_snake.genetic.genome import Genome
-from genetic_snake.genetic.individual import Individual 
-from genetic_snake.genetic.functional import elitist_selection, roulette_wheel_selection
-from genetic_snake.genetic.functional import crossover 
-from genetic_snake.genetic.functional import mutate
-
-import genetic_snake.cpp_module as cpp_module
+from .genome import Genome
+from .individual import Individual
+from .functional import elitist_selection, roulette_wheel_selection
+from .functional import crossover, mutate
+import genetic_snake_C
 
 def evaluate_population(population, size, snake_env_class):
     highscore = 0
@@ -59,7 +57,7 @@ def generation_step(population, num_parents, num_children):
     population.extend(children)
     return population
 
-def run_genetic_algorithm(parents, children, usecpp, size, snake_env_class, num_threads):
+def run_genetic_algorithm(parents, children, usecpp, size, snake_env_class, num_threads, output_dir_name):
     highscore = 0
     population  = [Individual() for _ in range(parents + children)]
     generation = 1
@@ -68,7 +66,7 @@ def run_genetic_algorithm(parents, children, usecpp, size, snake_env_class, num_
     while True:
         print("\n\33[90m--------------------------------\33[0m\n\33[92mGeneration {:,}\33[0m".format(generation))
         if usecpp:
-            game_results = cpp_module.evaluate_population([ind.genome.params for ind in population], size, num_threads)
+            game_results = genetic_snake_C.evaluate_population([ind.genome.params for ind in population], size, num_threads)
             game_steps = [result[0] for result in game_results]
             game_scores = [result[1] for result in game_results]
             mean_score = 0
@@ -82,7 +80,10 @@ def run_genetic_algorithm(parents, children, usecpp, size, snake_env_class, num_
                 mean_fitness += ind.fitness
 
                 if score >= size**2 - 3:
-                    ind.genome.save(f"models/ind")
+                    if output_dir_name is not None:
+                        ind.genome.save(output_dir_name)
+                    else:
+                        ind.genome.save(f"individual_gen_{generation}")
                     exit(0)
             
             mean_score /= pop_size

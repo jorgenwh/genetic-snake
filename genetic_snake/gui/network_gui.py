@@ -2,7 +2,7 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 from typing import List
 import numpy as np
 
-class NetworkGui(QtWidgets.QWidget):
+class NetworkGUI(QtWidgets.QWidget):
     def __init__(self, parent, dims: List[int]):
         super().__init__(parent)
         self.dims = dims

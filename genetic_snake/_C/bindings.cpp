@@ -1,13 +1,14 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
-namespace py = pybind11;
 
 #include "snake_env.h"
 #include "fitness_eval.h"
 
-PYBIND11_MODULE(cpp_module, m) {
-  m.doc() = "Documentation for cpp parts of the genetic-snake project";
+namespace py = pybind11;
+
+PYBIND11_MODULE(genetic_snake_C, m) {
+  m.doc() = "genetic_snake_C module";
 
   py::class_<SnakeEnv>(
       m, "SnakeEnv"

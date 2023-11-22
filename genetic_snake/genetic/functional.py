@@ -1,9 +1,8 @@
 import numpy as np
-import random
 from typing import List, Tuple
 
-from genetic_snake.genetic.genome import Genome
-from genetic_snake.genetic.individual import Individual
+from .genome import Genome
+from .individual import Individual
 
 def elitist_selection(population, n):
     individuals = sorted(population, key=lambda individual: individual.fitness, reverse=True)

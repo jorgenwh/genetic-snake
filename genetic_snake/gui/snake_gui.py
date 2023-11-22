@@ -3,7 +3,7 @@ import numpy as np
 
 from genetic_snake.snake_env import SnakeEnv
 
-class SnakeGui(QtWidgets.QWidget):
+class SnakeGUI(QtWidgets.QWidget):
     def __init__(self, parent, snake_env: SnakeEnv, args):
         super().__init__(parent)
         self.args = args

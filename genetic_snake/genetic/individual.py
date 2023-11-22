@@ -1,5 +1,4 @@
-from genetic_snake.genetic.genome import Genome
-import numpy as np 
+from .genome import Genome
 
 class Individual():
     """
